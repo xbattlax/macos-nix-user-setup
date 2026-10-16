@@ -33,8 +33,10 @@ macos_major=$(/usr/bin/sw_vers -productVersion | /usr/bin/cut -d. -f1)
 
 /usr/bin/dscl . -read "/Users/$username" >/dev/null 2>&1 && die "Le compte $username existe déjà."
 
-# Une authentification admin est nécessaire pour installer Office et créer le compte.
-/usr/bin/sudo -v
+# sudo demande le mot de passe de la session administrateur déjà ouverte,
+# pas celui du nouveau compte.
+printf 'Authentification de la session administrateur en cours…\n'
+/usr/bin/sudo -p '[sudo] Mot de passe de la session administrateur : ' -v
 
 if ! command -v nix >/dev/null 2>&1 \
   && [[ ! -x /nix/var/nix/profiles/default/bin/nix ]]; then
@@ -75,6 +77,7 @@ for cask in google-chrome claude claude-code microsoft-office; do
 done
 
 printf 'Création du compte standard %s…\n' "$username"
+printf "macOS demandera le mot de passe du nouveau compte, puis pourra redemander celui de l'administrateur.\n"
 # Avec -password -, sysadminctl demande lui-même le mot de passe sans
 # l'exposer dans les arguments du processus. interactive permet à macOS
 # de demander les identifiants de l'admin pour le Secure Token.
