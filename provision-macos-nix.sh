@@ -81,11 +81,10 @@ printf "macOS demandera le mot de passe du nouveau compte, puis pourra redemande
 # Avec -password -, sysadminctl demande lui-même le mot de passe sans
 # l'exposer dans les arguments du processus. interactive permet à macOS
 # de demander les identifiants de l'admin pour le Secure Token.
-/usr/bin/sudo /usr/sbin/sysadminctl -addUser "$username" \
+/usr/bin/sudo /usr/sbin/sysadminctl interactive -addUser "$username" \
   -fullName "$username" \
   -home "/Users/$username" \
-  -password "$user_password" \
-  interactive
+  -password "$user_password"
 
 unset user_password
 /usr/bin/dscl . -read "/Users/$username" >/dev/null 2>&1 || die "Le compte n'a pas été créé."
