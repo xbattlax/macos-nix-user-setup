@@ -18,7 +18,13 @@ Les applications sont installées pour le Mac via Homebrew. Nix est disponible p
 
 ## Utilisation
 
-Depuis la session administrateur, sans lancer le script avec `sudo` :
+Depuis une session administrateur macOS, remplacez `nom_utilisateur` par le nom court du nouveau compte, puis exécutez cette commande dans le Terminal, **sans `sudo`** :
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xbattlax/macos-nix-user-setup/main/provision-macos-nix.sh -o provision-macos-nix.sh && bash provision-macos-nix.sh nom_utilisateur -
+```
+
+Si vous avez déjà téléchargé le dépôt, lancez le script directement :
 
 ```bash
 chmod +x provision-macos-nix.sh
