@@ -7,6 +7,7 @@ usage() {
   cat <<'EOF'
 Usage: ./provision-macos-nix.sh NOM_UTILISATEUR MOT_DE_PASSE
        ./provision-macos-nix.sh NOM_UTILISATEUR -
+       ./provision-macos-nix.sh --apps-only
 
 Le second format demande le mot de passe sans l'afficher ni le placer
 dans l'historique du shell. Le script doit être lancé depuis une session
@@ -16,29 +17,39 @@ EOF
 
 die() { printf 'Erreur : %s\n' "$*" >&2; exit 1; }
 
-[[ $# -eq 2 ]] || { usage >&2; exit 2; }
-username=$1
-user_password=$2
+apps_only=0
+if [[ $# -eq 1 && $1 == --apps-only ]]; then
+  apps_only=1
+  username=''
+  user_password=''
+else
+  [[ $# -eq 2 ]] || { usage >&2; exit 2; }
+  username=$1
+  user_password=$2
+fi
 
 [[ $(uname -s) == Darwin ]] || die 'Ce script est réservé à macOS.'
 [[ $EUID -ne 0 ]] || die 'Lancez ce script depuis la session admin, sans sudo.'
-[[ $username =~ ^[a-z_][a-z0-9_-]{0,30}$ ]] || die 'Nom court invalide (lettres minuscules, chiffres, _ ou -).'
+if [[ $apps_only -eq 0 ]]; then
+  [[ $username =~ ^[a-z_][a-z0-9_-]{0,30}$ ]] || die 'Nom court invalide (lettres minuscules, chiffres, _ ou -).'
+fi
 id -Gn | /usr/bin/grep -Eq '(^| )admin( |$)' || die 'La session courante doit être administrateur.'
 
 macos_major=$(/usr/bin/sw_vers -productVersion | /usr/bin/cut -d. -f1)
 [[ $macos_major =~ ^[0-9]+$ && $macos_major -ge 14 ]] || die 'Microsoft Office via Homebrew nécessite macOS 14 ou plus récent.'
 
 [[ -t 0 ]] || die "Un terminal interactif est requis pour l'authentification admin."
-[[ -n $user_password ]] || die 'Le mot de passe ne peut pas être vide.'
-
-/usr/bin/dscl . -read "/Users/$username" >/dev/null 2>&1 && die "Le compte $username existe déjà."
+if [[ $apps_only -eq 0 ]]; then
+  [[ -n $user_password ]] || die 'Le mot de passe ne peut pas être vide.'
+  /usr/bin/dscl . -read "/Users/$username" >/dev/null 2>&1 && die "Le compte $username existe déjà."
+fi
 
 # sudo demande le mot de passe de la session administrateur déjà ouverte,
 # pas celui du nouveau compte.
 printf 'Authentification de la session administrateur en cours…\n'
 /usr/bin/sudo -p '[sudo] Mot de passe de la session administrateur : ' -v
 
-if [[ ${JEF_INSTALL_NIX:-0} != 1 ]]; then
+if [[ $apps_only -eq 1 || ${JEF_INSTALL_NIX:-0} != 1 ]]; then
   printf 'Installation de Nix reportée (pour l’activer : JEF_INSTALL_NIX=1).\n'
 elif ! command -v nix >/dev/null 2>&1 \
   && [[ ! -x /nix/var/nix/profiles/default/bin/nix ]]; then
@@ -69,7 +80,7 @@ if [[ ! -f /etc/paths.d/homebrew ]] || ! /usr/bin/grep -Fxq "$brew_bin" /etc/pat
   printf '%s\n' "$brew_bin" | /usr/bin/sudo /usr/bin/tee -a /etc/paths.d/homebrew >/dev/null
 fi
 
-for cask in google-chrome claude claude-code microsoft-office adobe-creative-cloud displaylink webex; do
+for cask in google-chrome claude claude-code microsoft-office adobe-creative-cloud displaylink webex chatgpt codex codex-app; do
   if "$brew_cmd" list --cask "$cask" >/dev/null 2>&1; then
     printf 'Déjà installé : %s\n' "$cask"
   else
@@ -77,6 +88,11 @@ for cask in google-chrome claude claude-code microsoft-office adobe-creative-clo
     "$brew_cmd" install --cask "$cask"
   fi
 done
+
+if [[ $apps_only -eq 1 ]]; then
+  printf '\nApplications installées ou déjà présentes. Nix et les comptes utilisateurs n’ont pas été modifiés.\n'
+  exit 0
+fi
 
 printf 'Création du compte standard %s…\n' "$username"
 printf "macOS demandera le mot de passe du nouveau compte, puis pourra redemander celui de l'administrateur.\n"
@@ -92,6 +108,6 @@ unset user_password
 /usr/bin/dscl . -read "/Users/$username" >/dev/null 2>&1 || die "Le compte n'a pas été créé."
 /usr/bin/sudo /usr/sbin/sysadminctl -secureTokenStatus "$username"
 
-printf '\nTerminé : compte %s créé. Chrome, Claude, Office, Creative Cloud, DisplayLink Manager et Webex sont installés.\n' "$username"
+printf '\nTerminé : compte %s créé. Chrome, Claude, Office, Creative Cloud, DisplayLink Manager, Webex, ChatGPT et Codex sont installés.\n' "$username"
 printf 'À la première ouverture, connectez Claude, Adobe et Webex et activez Office avec une licence Microsoft valide.\n'
 printf 'Pour les écrans DisplayLink, redémarrez le Mac, ouvrez DisplayLink Manager, activez son lancement à la connexion et autorisez Enregistrement de l’écran dans Réglages système.\n'

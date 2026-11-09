@@ -9,6 +9,8 @@ Ce script crée un compte utilisateur standard et installe, si nécessaire :
 - Adobe Creative Cloud
 - DisplayLink Manager pour les stations d’accueil compatibles
 - Webex
+- ChatGPT
+- Codex (application Mac et outil en ligne de commande)
 
 Nix est optionnel et reporté par défaut : l’installateur officiel a échoué sur un volume `/nix` partiellement créé lors d’un déploiement. Il ne sert pas à installer ces applications.
 
@@ -25,7 +27,7 @@ Les applications sont installées pour le Mac via Homebrew. Nix est disponible p
 Depuis une session administrateur macOS, remplacez `nom_utilisateur` par le nom court du nouveau compte, puis exécutez cette commande dans le Terminal, **sans `sudo`** :
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/xbattlax/macos-nix-user-setup/main/provision-macos-nix.sh -o provision-macos-nix.sh && bash provision-macos-nix.sh nom_utilisateur -
+curl -fsSL 'https://github.com/xbattlax/macos-nix-user-setup/raw/refs/heads/main/provision-macos-nix.sh?raw=1' -o provision-macos-nix.sh && bash provision-macos-nix.sh nom_utilisateur -
 ```
 
 Si vous avez déjà téléchargé le dépôt, lancez le script directement :
@@ -34,6 +36,14 @@ Si vous avez déjà téléchargé le dépôt, lancez le script directement :
 chmod +x provision-macos-nix.sh
 ./provision-macos-nix.sh nom_utilisateur -
 ```
+
+Si le compte existe déjà et que seules les applications manquent, relancez le script avec `--apps-only` :
+
+```bash
+bash provision-macos-nix.sh --apps-only
+```
+
+Ce mode ne relance pas Nix et ne modifie aucun compte utilisateur.
 
 Pour activer volontairement l’installation de Nix après diagnostic du volume `/nix` :
 
@@ -57,5 +67,8 @@ Après l’installation de DisplayLink Manager, redémarrez le Mac. À la premi�
 - [Paquet Homebrew Creative Cloud](https://formulae.brew.sh/cask/adobe-creative-cloud)
 - [Paquet Homebrew DisplayLink](https://formulae.brew.sh/cask/displaylink)
 - [Paquet Homebrew Webex](https://formulae.brew.sh/cask/webex)
+- [Paquet Homebrew ChatGPT](https://formulae.brew.sh/cask/chatgpt)
+- [Paquet Homebrew Codex CLI](https://formulae.brew.sh/cask/codex)
+- [Paquet Homebrew Codex App](https://formulae.brew.sh/cask/codex-app)
 - [Configuration officielle de DisplayLink Manager](https://support.displaylink.com/knowledgebase/articles/1932214-displaylink-manager-app-for-macos-introduction-in)
 - [Secure Token sur macOS](https://support.apple.com/guide/deployment/use-secure-token-bootstrap-token-and-volume-ownership-dep24dbdcf9e/web)
