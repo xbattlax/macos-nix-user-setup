@@ -34,6 +34,14 @@ chmod +x provision-macos-nix.sh
 ./provision-macos-nix.sh nom_utilisateur -
 ```
 
+Si l’installation Nix échoue sur un Mac, le reste du provisionnement peut être effectué sans toucher au volume Nix partiellement créé :
+
+```bash
+JEF_SKIP_NIX=1 bash provision-macos-nix.sh nom_utilisateur -
+```
+
+Cette option reporte uniquement Nix. Elle installe Homebrew et les applications, puis crée le compte standard. Diagnostiquer Nix séparément avant de relancer son installateur ; ne pas effacer le volume `/nix` à l’aveugle.
+
 Le premier mot de passe demandé par `sudo` est **celui de la session administrateur déjà ouverte**. Le script demandera ensuite le mot de passe du **nouveau compte** lors de sa création ; macOS peut aussi redemander celui de l'administrateur. Le `-` évite d'inscrire le mot de passe du nouveau compte dans la commande ou de l'exposer dans ses arguments.
 
 Le script accepte aussi `./provision-macos-nix.sh nom_utilisateur mot_de_passe`, mais ce format peut exposer le mot de passe dans l'historique du terminal et la liste des processus. Le compte ne doit pas déjà exister. Il est créé comme utilisateur standard. À la fin, le script affiche l'état de son Secure Token.
