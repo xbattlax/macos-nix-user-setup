@@ -38,8 +38,8 @@ macos_major=$(/usr/bin/sw_vers -productVersion | /usr/bin/cut -d. -f1)
 printf 'Authentification de la session administrateur en cours…\n'
 /usr/bin/sudo -p '[sudo] Mot de passe de la session administrateur : ' -v
 
-if [[ ${JEF_SKIP_NIX:-0} == 1 ]]; then
-  printf 'Installation de Nix reportée (JEF_SKIP_NIX=1).\n'
+if [[ ${JEF_INSTALL_NIX:-0} != 1 ]]; then
+  printf 'Installation de Nix reportée (pour l’activer : JEF_INSTALL_NIX=1).\n'
 elif ! command -v nix >/dev/null 2>&1 \
   && [[ ! -x /nix/var/nix/profiles/default/bin/nix ]]; then
   printf 'Installation de Nix (mode multi-utilisateur)…\n'

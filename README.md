@@ -2,7 +2,6 @@
 
 Ce script crée un compte utilisateur standard et installe, si nécessaire :
 
-- Nix (installation officielle en mode multi-utilisateur)
 - Homebrew
 - Google Chrome
 - Claude Desktop et Claude Code
@@ -10,6 +9,8 @@ Ce script crée un compte utilisateur standard et installe, si nécessaire :
 - Adobe Creative Cloud
 - DisplayLink Manager pour les stations d’accueil compatibles
 - Webex
+
+Nix est optionnel et reporté par défaut : l’installateur officiel a échoué sur un volume `/nix` partiellement créé lors d’un déploiement. Il ne sert pas à installer ces applications.
 
 Les applications sont installées pour le Mac via Homebrew. Nix est disponible pour les comptes de la machine, mais le script ne gère pas les applications avec nix-darwin.
 
@@ -34,13 +35,13 @@ chmod +x provision-macos-nix.sh
 ./provision-macos-nix.sh nom_utilisateur -
 ```
 
-Si l’installation Nix échoue sur un Mac, le reste du provisionnement peut être effectué sans toucher au volume Nix partiellement créé :
+Pour activer volontairement l’installation de Nix après diagnostic du volume `/nix` :
 
 ```bash
-JEF_SKIP_NIX=1 bash provision-macos-nix.sh nom_utilisateur -
+JEF_INSTALL_NIX=1 bash provision-macos-nix.sh nom_utilisateur -
 ```
 
-Cette option reporte uniquement Nix. Elle installe Homebrew et les applications, puis crée le compte standard. Diagnostiquer Nix séparément avant de relancer son installateur ; ne pas effacer le volume `/nix` à l’aveugle.
+L’installation normale reporte Nix et installe Homebrew, les applications, puis crée le compte standard. Diagnostiquer Nix séparément avant de relancer son installateur ; ne pas effacer le volume `/nix` à l’aveugle.
 
 Le premier mot de passe demandé par `sudo` est **celui de la session administrateur déjà ouverte**. Le script demandera ensuite le mot de passe du **nouveau compte** lors de sa création ; macOS peut aussi redemander celui de l'administrateur. Le `-` évite d'inscrire le mot de passe du nouveau compte dans la commande ou de l'exposer dans ses arguments.
 
