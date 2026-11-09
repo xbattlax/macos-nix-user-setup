@@ -7,6 +7,9 @@ Ce script crée un compte utilisateur standard et installe, si nécessaire :
 - Google Chrome
 - Claude Desktop et Claude Code
 - Microsoft Office pour Mac (applications locales)
+- Adobe Creative Cloud
+- DisplayLink Manager pour les stations d’accueil compatibles
+- Webex
 
 Les applications sont installées pour le Mac via Homebrew. Nix est disponible pour les comptes de la machine, mais le script ne gère pas les applications avec nix-darwin.
 
@@ -14,7 +17,7 @@ Les applications sont installées pour le Mac via Homebrew. Nix est disponible p
 
 - macOS 14 ou plus récent pour le paquet Office. Homebrew prend officiellement en charge macOS 15 ou plus récent sur Apple Silicon ; macOS 14 peut fonctionner sans être pris en charge.
 - Une session administrateur avec accès Internet et un terminal interactif.
-- Une licence Microsoft adaptée pour activer Office et un compte Claude pour utiliser Claude.
+- Une licence Microsoft adaptée pour activer Office, un compte Adobe pour Creative Cloud et les comptes nécessaires à Claude et Webex.
 
 ## Utilisation
 
@@ -35,9 +38,15 @@ Le premier mot de passe demandé par `sudo` est **celui de la session administra
 
 Le script accepte aussi `./provision-macos-nix.sh nom_utilisateur mot_de_passe`, mais ce format peut exposer le mot de passe dans l'historique du terminal et la liste des processus. Le compte ne doit pas déjà exister. Il est créé comme utilisateur standard. À la fin, le script affiche l'état de son Secure Token.
 
+Après l’installation de DisplayLink Manager, redémarrez le Mac. À la première connexion du nouvel utilisateur, ouvrez DisplayLink Manager, activez son lancement automatique et accordez-lui l’autorisation « Enregistrement de l’écran » dans Réglages système. Branchez la station d’accueil et vérifiez les écrans. Cette autorisation macOS demande une action dans la session utilisateur.
+
 ## Références
 
 - [Installation officielle de Nix sur macOS](https://nixos.org/download/)
 - [Installation de Homebrew](https://docs.brew.sh/Installation)
 - [Paquet Homebrew Microsoft Office](https://formulae.brew.sh/cask/microsoft-office)
+- [Paquet Homebrew Creative Cloud](https://formulae.brew.sh/cask/adobe-creative-cloud)
+- [Paquet Homebrew DisplayLink](https://formulae.brew.sh/cask/displaylink)
+- [Paquet Homebrew Webex](https://formulae.brew.sh/cask/webex)
+- [Configuration officielle de DisplayLink Manager](https://support.displaylink.com/knowledgebase/articles/1932214-displaylink-manager-app-for-macos-introduction-in)
 - [Secure Token sur macOS](https://support.apple.com/guide/deployment/use-secure-token-bootstrap-token-and-volume-ownership-dep24dbdcf9e/web)

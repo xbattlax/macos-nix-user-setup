@@ -67,7 +67,7 @@ if [[ ! -f /etc/paths.d/homebrew ]] || ! /usr/bin/grep -Fxq "$brew_bin" /etc/pat
   printf '%s\n' "$brew_bin" | /usr/bin/sudo /usr/bin/tee -a /etc/paths.d/homebrew >/dev/null
 fi
 
-for cask in google-chrome claude claude-code microsoft-office; do
+for cask in google-chrome claude claude-code microsoft-office adobe-creative-cloud displaylink webex; do
   if "$brew_cmd" list --cask "$cask" >/dev/null 2>&1; then
     printf 'Déjà installé : %s\n' "$cask"
   else
@@ -90,5 +90,6 @@ unset user_password
 /usr/bin/dscl . -read "/Users/$username" >/dev/null 2>&1 || die "Le compte n'a pas été créé."
 /usr/bin/sudo /usr/sbin/sysadminctl -secureTokenStatus "$username"
 
-printf '\nTerminé : compte %s créé. Chrome, Claude Desktop, Claude Code et Office sont installés.\n' "$username"
-printf 'À la première ouverture, connectez Claude et activez Office avec une licence Microsoft valide.\n'
+printf '\nTerminé : compte %s créé. Chrome, Claude, Office, Creative Cloud, DisplayLink Manager et Webex sont installés.\n' "$username"
+printf 'À la première ouverture, connectez Claude, Adobe et Webex et activez Office avec une licence Microsoft valide.\n'
+printf 'Pour les écrans DisplayLink, redémarrez le Mac, ouvrez DisplayLink Manager, activez son lancement à la connexion et autorisez Enregistrement de l’écran dans Réglages système.\n'
