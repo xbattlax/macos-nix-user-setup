@@ -16,6 +16,8 @@ Nix est optionnel et reporté par défaut : l’installateur officiel a échoué
 
 Les applications sont installées pour le Mac via Homebrew. Nix est disponible pour les comptes de la machine, mais le script ne gère pas les applications avec nix-darwin.
 
+Si le téléchargement ou l'installation d'une application échoue, le script passe à la suivante et crée quand même le compte. Il affiche à la fin la liste des applications à reprendre. Si Homebrew ne peut pas être installé, la création du compte continue également.
+
 ## Prérequis
 
 - macOS 14 ou plus récent pour le paquet Office. Homebrew prend officiellement en charge macOS 15 ou plus récent sur Apple Silicon ; macOS 14 peut fonctionner sans être pris en charge.
@@ -44,6 +46,7 @@ bash provision-macos-nix.sh --apps-only
 ```
 
 Ce mode ne relance pas Nix et ne modifie aucun compte utilisateur.
+Il peut être relancé après un échec de téléchargement pour installer les applications manquantes.
 
 Pour activer volontairement l’installation de Nix après diagnostic du volume `/nix` :
 

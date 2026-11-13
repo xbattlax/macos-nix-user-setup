@@ -58,11 +58,18 @@ elif ! command -v nix >/dev/null 2>&1 \
   [[ -x /nix/var/nix/profiles/default/bin/nix ]] || die "Nix n'est pas disponible après son installation."
 fi
 
+failed_apps=()
 if ! command -v brew >/dev/null 2>&1 \
   && [[ ! -x /opt/homebrew/bin/brew ]] \
   && [[ ! -x /usr/local/bin/brew ]]; then
   printf 'Installation de Homebrew…\n'
-  /bin/bash -c "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  if installer=$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh); then
+    if ! /bin/bash -c "$installer"; then
+      printf 'Attention : installation de Homebrew échouée ; les applications seront à reprendre.\n' >&2
+    fi
+  else
+    printf 'Attention : téléchargement de Homebrew échoué ; les applications seront à reprendre.\n' >&2
+  fi
 fi
 
 if [[ -x /opt/homebrew/bin/brew ]]; then
@@ -70,27 +77,49 @@ if [[ -x /opt/homebrew/bin/brew ]]; then
 elif [[ -x /usr/local/bin/brew ]]; then
   brew_cmd=/usr/local/bin/brew
 else
-  die 'Homebrew est introuvable après son installation.'
+  brew_cmd=''
+  printf 'Attention : Homebrew est introuvable ; installation des applications reportée.\n' >&2
 fi
 
-# path_helper lit /etc/paths.d à l'ouverture d'une nouvelle session :
-# Claude Code sera ainsi disponible pour le compte créé sur Apple Silicon.
-brew_bin="$("$brew_cmd" --prefix)/bin"
-if [[ ! -f /etc/paths.d/homebrew ]] || ! /usr/bin/grep -Fxq "$brew_bin" /etc/paths.d/homebrew; then
-  printf '%s\n' "$brew_bin" | /usr/bin/sudo /usr/bin/tee -a /etc/paths.d/homebrew >/dev/null
-fi
-
-for cask in google-chrome claude claude-code microsoft-office adobe-creative-cloud displaylink webex chatgpt codex codex-app; do
-  if "$brew_cmd" list --cask "$cask" >/dev/null 2>&1; then
-    printf 'Déjà installé : %s\n' "$cask"
+if [[ -n $brew_cmd ]]; then
+  # path_helper lit /etc/paths.d à l'ouverture d'une nouvelle session :
+  # Claude Code sera ainsi disponible pour le compte créé sur Apple Silicon.
+  if brew_prefix=$("$brew_cmd" --prefix); then
+    brew_bin="$brew_prefix/bin"
+    if [[ ! -f /etc/paths.d/homebrew ]] || ! /usr/bin/grep -Fxq "$brew_bin" /etc/paths.d/homebrew; then
+      printf '%s\n' "$brew_bin" | /usr/bin/sudo /usr/bin/tee -a /etc/paths.d/homebrew >/dev/null
+    fi
   else
-    printf 'Installation : %s\n' "$cask"
-    "$brew_cmd" install --cask "$cask"
+    printf 'Attention : préfixe Homebrew indisponible ; chemin Claude Code à vérifier.\n' >&2
   fi
-done
+
+  for cask in google-chrome claude claude-code microsoft-office adobe-creative-cloud displaylink webex chatgpt codex codex-app; do
+    if "$brew_cmd" list --cask "$cask" >/dev/null 2>&1; then
+      printf 'Déjà installé : %s\n' "$cask"
+    else
+      printf 'Installation : %s\n' "$cask"
+      if ! "$brew_cmd" install --cask "$cask"; then
+        failed_apps+=("$cask")
+        printf 'Attention : installation de %s échouée ; poursuite du script.\n' "$cask" >&2
+      fi
+    fi
+  done
+fi
+
+report_apps() {
+  if [[ -z $brew_cmd ]]; then
+    printf 'Applications à reprendre : Homebrew et toutes les applications.\n'
+  elif ((${#failed_apps[@]})); then
+    printf 'Applications à reprendre : %s\n' "${failed_apps[*]}"
+  else
+    printf 'Toutes les applications demandées sont installées ou déjà présentes.\n'
+  fi
+}
 
 if [[ $apps_only -eq 1 ]]; then
-  printf '\nApplications installées ou déjà présentes. Nix et les comptes utilisateurs n’ont pas été modifiés.\n'
+  printf '\n'
+  report_apps
+  printf 'Nix et les comptes utilisateurs n’ont pas été modifiés.\n'
   exit 0
 fi
 
@@ -108,6 +137,7 @@ unset user_password
 /usr/bin/dscl . -read "/Users/$username" >/dev/null 2>&1 || die "Le compte n'a pas été créé."
 /usr/bin/sudo /usr/sbin/sysadminctl -secureTokenStatus "$username"
 
-printf '\nTerminé : compte %s créé. Chrome, Claude, Office, Creative Cloud, DisplayLink Manager, Webex, ChatGPT et Codex sont installés.\n' "$username"
+printf '\nTerminé : compte %s créé.\n' "$username"
+report_apps
 printf 'À la première ouverture, connectez Claude, Adobe et Webex et activez Office avec une licence Microsoft valide.\n'
 printf 'Pour les écrans DisplayLink, redémarrez le Mac, ouvrez DisplayLink Manager, activez son lancement à la connexion et autorisez Enregistrement de l’écran dans Réglages système.\n'
